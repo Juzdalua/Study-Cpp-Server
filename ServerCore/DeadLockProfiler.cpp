@@ -13,7 +13,7 @@ void DeadLockProfiler::PushLock(const char* name)
 	int32 lockId = 0;
 	auto findIt = _nameToId.find(name);
 	if (findIt == _nameToId.end()) {
-		lockId = static_cast<int>(_nameToId.size());
+		lockId = static_cast<int32>(_nameToId.size());
 		_nameToId[name] = lockId;
 		_idToName[lockId] = name;
 	}
@@ -40,14 +40,14 @@ void DeadLockProfiler::PopLock(const char* name)
 {
 	LockGuard guard(_lock);
 
-	if (_lockStack.empty())
+	if (LLockStack.empty())
 		CRASH("MULTIPLE_UNLOCK");
 
 	int32 lockId = _nameToId[name];
-	if (_lockStack.top() != lockId)
+	if (LLockStack.top() != lockId)
 		CRASH("INVALID_UNLOCK");
 
-	_lockStack.pop();
+	LLockStack.pop();
 }
 
 void DeadLockProfiler::CheckCycle()
