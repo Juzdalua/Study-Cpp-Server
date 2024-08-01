@@ -1,29 +1,22 @@
 ﻿#include "pch.h"
 #include "CorePch.h"
+#include "CoreMacro.h"
+#include "ThreadManager.h"
 #include <iostream>
-#include <thread>
-#include "AccountManager.h"
-#include "UserManager.h"
 
-void Func1() {
-	for (int32 i = 0; i < 1'000; i++) {
-		UserManager::Instance()->ProcessSave();
-	}
-}
+CoreGlobal Core;
 
-void Func2() {
-	for (int32 i = 0; i < 1'000; i++) {
-		AccountManager::instance()->ProcessLogin();
+void ThreadMain() {
+	while (true) {
+		cout << "Hello: " << LThreadId << endl;
+		this_thread::sleep_for(1s);
 	}
 }
 
 int main()
 {
-	thread t1(Func1);
-	thread t2(Func2);
-
-	t1.join();
-	t2.join();
-
-	cout << "done" << endl;
+	for (int32 i = 0; i < 5; i++) {
+		GThreadManager->Launch(ThreadMain);
+	}
+	GThreadManager->Join();
 }
