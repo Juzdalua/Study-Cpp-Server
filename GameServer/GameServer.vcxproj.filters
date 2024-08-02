@@ -7,6 +7,9 @@
     <Filter Include="Utils">
       <UniqueIdentifier>{45c9f00b-364a-4ec6-ac2e-51b2d7ce2493}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Test">
+      <UniqueIdentifier>{efd0747e-e51d-4dbf-8b99-ad9f0f34c2e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameServer.cpp">
@@ -16,10 +19,10 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="AccountManager.cpp">
-      <Filter>Main</Filter>
+      <Filter>Test</Filter>
     </ClCompile>
     <ClCompile Include="PlayerManager.cpp">
-      <Filter>Main</Filter>
+      <Filter>Test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -27,10 +30,10 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="AccountManager.h">
-      <Filter>Main</Filter>
+      <Filter>Test</Filter>
     </ClInclude>
     <ClInclude Include="PlayerManager.h">
-      <Filter>Main</Filter>
+      <Filter>Test</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

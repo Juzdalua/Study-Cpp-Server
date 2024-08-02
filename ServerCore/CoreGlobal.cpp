@@ -5,6 +5,7 @@
 
 ThreadManager* GThreadManager = nullptr;
 DeadLockProfiler* GDeadLockProfiler = nullptr;
+CoreGlobal GCoreGlobal;
 
 CoreGlobal::CoreGlobal() {
 	GThreadManager = new ThreadManager;
@@ -14,4 +15,4 @@ CoreGlobal::CoreGlobal() {
 CoreGlobal::~CoreGlobal() {
 	delete GThreadManager;
 	delete GDeadLockProfiler;
-}
+} 

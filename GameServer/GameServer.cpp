@@ -7,8 +7,6 @@
 #include "AccountManager.h"
 #include "PlayerManager.h"
 
-CoreGlobal Core;
-
 class TestLock {
 	USE_LOCK;
 
@@ -55,16 +53,16 @@ void ThreadRead() {
 
 int main()
 {
-	/*for (int32 i = 0; i < 2; i++) {
+	for (int32 i = 0; i < 2; i++) {
 		GThreadManager->Launch(ThreadWrite);
 	}
 
 	for (int32 i = 0; i < 5; i++) {
 		GThreadManager->Launch(ThreadRead);
 	}
-	*/
+	
 
-	GThreadManager->Launch([=]() {
+	/*GThreadManager->Launch([=]() {
 		while (true) {
 			cout << "PlayerThenAccount" << endl;
 			GPlayerManager.PlayerThenAccount();
@@ -78,7 +76,7 @@ int main()
 			GAccountManager.AccountThenPlayerLock();
 			this_thread::sleep_for(100ms);
 		}
-		});
+		});*/
 
 	GThreadManager->Join();
 
