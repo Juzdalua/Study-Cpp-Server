@@ -3,11 +3,12 @@
 #include "Allocator.h"
 
 template<typename Type, typename... Args>
-Type* xnew(Args&&... args) {
-	Type* memory = static_cast<Type*>(xalloc(sizeof(Type);
+Type* xnew(Args&&... args) 
+{
+	Type* memory = static_cast<Type*>(BaseAllocator::Alloc(sizeof(Type)));
 
 	//placement new - 생성자 호출
-	new(memory) Type(std::forward<Args>(args)...);
+	new(memory) Type(forward<Args>(args)...);
 
 	return memory;
 }
@@ -15,5 +16,5 @@ Type* xnew(Args&&... args) {
 template<typename Type>
 void xdelete(Type* obj) {
 	obj->~Type();
-	xrelease(obj);
+	BaseAllocator::Release(obj);
 }
