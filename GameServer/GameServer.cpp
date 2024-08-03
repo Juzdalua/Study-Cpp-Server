@@ -4,63 +4,19 @@
 #include "ThreadManager.h"
 #include <iostream>
 #include "RefCounting.h"
+#include "Memory.h"
 
-class Wraith: public RefCountable {
+class Knight {
 public:
-	int _hp = 150;
-	int _posX = 0;
-	int _posY = 0;
+	Knight() { cout << "생성자" << endl; }
+	~Knight() { cout << "소멸자" << endl; }
 };
-
-using WraithRef = TSharedPtr<Wraith>;
-
-class Missile : public RefCountable {
-public:
-
-	void SetTarget(WraithRef target) {
-		_target = target;
-	}
-
-	bool Update() {
-		if (_target == nullptr)
-			return true;
-
-		int posX = _target->_posX;
-		int posY = _target->_posY;
-
-		// TODO: 쫓아간다
-
-		if (_target->_hp == 0) {
-			_target = nullptr;
-			return true;
-		}
-		return false;
-	}
-
-	WraithRef _target = nullptr;
-};
-
-using MissileRef = TSharedPtr<Missile>;
 
 int main()
 {
-	WraithRef wraith(new Wraith());
-	wraith->ReleaseRef();
-	MissileRef missile(new Missile());
-	missile->ReleaseRef();
-	missile->SetTarget(wraith);
+	Knight* knight = new Knight();
+	delete knight;
 
-	// 레이스가 피격 당함
-	wraith->_hp = 0;
-	wraith = nullptr; // WraithRef(nullptr)
-
-	while (true) {
-		if (missile) {
-			if (missile->Update()) {
-				missile->ReleaseRef();
-				missile = nullptr;
-			}
-		}
-	}
-	missile = nullptr;
+	Knight* knight1 = xnew<Knight>();
+	xdelete(knight1);
 }

@@ -50,7 +50,7 @@ public:
 	TSharedPtr& operator=(const TSharedPtr& rhs) {
 		if (_ptr != rhs._ptr) {
 			Release();
-			set(rhs._ptr);
+			Set(rhs._ptr);
 		}
 		return *this;
 	}
