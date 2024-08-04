@@ -15,13 +15,13 @@
 /*-------------
 	Memory
 -------------*/
-//#ifdef _DEBUG
-//#define xalloc(size)			BaseAllocator::Alloc(size)
-//#define xrelease(ptr)			BaseAllocator::Release(ptr)
-//#else
-//#define xalloc(size)			BaseAllocator::Alloc(size)
-//#define xrelease(ptr)			BaseAllocator::Release(ptr)
-//#endif 
+#ifdef _DEBUG
+#define Xalloc(size)			StompAllocator::Alloc(size)
+#define Xrelease(ptr)			StompAllocator::Release(ptr)
+#else
+#define Xalloc(size)			BaseAllocator::Alloc(size)
+#define Xrelease(ptr)			BaseAllocator::Release(ptr)
+#endif 
 
 
 /*-------------
