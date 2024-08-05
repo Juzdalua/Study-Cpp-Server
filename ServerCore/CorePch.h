@@ -7,6 +7,7 @@
 #include "Lock.h"
 #include "Container.h"
 #include "ObjectPool.h"
+#include "TypeCast.h"
 
 #include <windows.h>
 #include <iostream>
