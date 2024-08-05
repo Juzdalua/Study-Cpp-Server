@@ -6,6 +6,7 @@
 #include "CoreMacro.h"
 #include "Lock.h"
 #include "Container.h"
+#include "ObjectPool.h"
 
 #include <windows.h>
 #include <iostream>

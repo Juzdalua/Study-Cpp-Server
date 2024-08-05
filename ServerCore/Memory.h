@@ -2,10 +2,38 @@
 
 #include "Allocator.h"
 
-template<typename Type, typename... Args>
-Type* xnew(Args&&... args) 
+class MemoryPool;
+
+/*-------------------
+	Memory
+-------------------*/
+class Memory
 {
-	Type* memory = static_cast<Type*>(Xalloc(sizeof(Type)));
+	enum
+	{
+		// ~1024 -> 32단위 / ~2048 -> 128 단위 / ~4096 -> 256 단위
+		POOL_COUNT = (1024 / 32) + (1024 / 128) + (2048 / 256),
+		MAX_ALLOC_SIZE = 4096,
+	};
+
+public:
+	Memory();
+	~Memory();
+
+	void* Allocate(int32 size);
+	void Release(void* ptr);
+
+private:
+	vector<MemoryPool*> _pools;
+
+	// 메모리 크기 <-> 메모리 풀 => O(1)
+	MemoryPool* _poolTable[MAX_ALLOC_SIZE + 1];
+};
+
+template<typename Type, typename... Args>
+Type* xnew(Args&&... args)
+{
+	Type* memory = static_cast<Type*>(PoolAllocator::Alloc(sizeof(Type)));
 
 	//placement new - 생성자 호출
 	new(memory) Type(forward<Args>(args)...);
@@ -16,5 +44,12 @@ Type* xnew(Args&&... args)
 template<typename Type>
 void xdelete(Type* obj) {
 	obj->~Type();
-	Xrelease(obj);
+	PoolAllocator::Release(obj);
+}
+
+// 메모리풀 적용된 공유 포인터
+template<typename Type>
+shared_ptr<Type> MakeShared()
+{
+	return shared_ptr<Type>{xnew<Type>(), xdelete<Type>};
 }

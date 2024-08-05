@@ -17,9 +17,32 @@ public:
 	int32 _hp = 100;
 };
 
+class Monster
+{
+public:
+	int64 _id = 0;
+};
+
 int main()
 {
-	Vector<int32> v(100);
-	Map<int32, Knight> m;
-	m[100] = Knight();
+	Knight* k = ObjectPool<Knight>::Pop();
+	ObjectPool<Knight>::Push(k);
+
+	// shared_ptr -> { allocator, deleter }
+	shared_ptr<Knight> sptr = ObjectPool<Knight>::MakeShared();
+
+	for (int32 i = 0; i < 5; i++) 
+	{
+		GThreadManager->Launch([]() {
+			while (true)
+			{
+				Vector<int32> v(100);
+				Map<int32, Knight> m;
+				m[100] = Knight();
+				this_thread::sleep_for(10ms);
+			}
+			});
+	}
+
+	GThreadManager->Join();
 }
