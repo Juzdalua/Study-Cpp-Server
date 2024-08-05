@@ -5,6 +5,7 @@
 #include <iostream>
 #include "RefCounting.h"
 #include "Memory.h"
+#include "Allocator.h"
 
 class Player{};
 
@@ -18,11 +19,7 @@ public:
 
 int main()
 {
-	Knight* k = xnew<Knight>();
-	xdelete(k);
-	k->_hp = 1;
-
-	Knight* p = (Knight*)xnew<Player>();
-	p->_hp = 2;
-	xdelete(p); // Error - Memory Overflow
+	Vector<int32> v(100);
+	Map<int32, Knight> m;
+	m[100] = Knight();
 }
