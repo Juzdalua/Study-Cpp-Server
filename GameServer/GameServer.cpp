@@ -3,114 +3,137 @@
 #include "CoreMacro.h"
 #include "ThreadManager.h"
 #include <iostream>
-#include "RefCounting.h"
-#include "Memory.h"
-#include "Allocator.h"
 
-using TL = TypeList<class Mage, class Knight, class Archer, class Player>;
+#include <WinSock2.h>
+#include <MSWSock.h>
+#include <WS2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
 
-enum PLAYER_TYPE
+void HandleError(const char* cause)
 {
-	KNIGHT,
-	MAGE
-};
-
-class Player
-{
-public:
-	Player() { INIT_TL(Player); }
-	virtual ~Player() {}
-	DECLARE_TL
-};
-
-class Knight : public Player {
-public:
-	Knight() { INIT_TL(Knight) }
-	~Knight() { cout << "소멸자" << endl; }
-
-	int32 _hp = 100;
-};
-
-class Mage : public Player {
-public:
-	Mage() { INIT_TL(Mage) }
-};
-
-class Archer : public Player {
-public:
-
-};
-
-class Dog {};
-
-void AttackPlayer(Player* player)
-{
-
+	int32 errCode = WSAGetLastError();
+	cout << cause << " ErrorCode: " << errCode << endl;
 }
+
+const int32 BUFSIZE = 1'000;
+struct Session
+{
+	SOCKET socket = INVALID_SOCKET;
+	char recvBuffer[BUFSIZE] = {};
+	int32 recvBytes = 0;
+	int32 sendBytes = 0;
+};
 
 int main()
 {
-	Player* p1 = new Knight();
-	Player* p2 = new Mage();
+	WSAData wsaData;
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+		return 0;
 
-	Knight* k1 = dynamic_cast<Knight*>(p1);
-	//if (p1->_type == KNIGHT)
-	//{
-	//	//Knight* k1 = (Knight*)p1;
-	//	Knight* k1 = static_cast<Knight*>(p1);
-	//}
+	SOCKET listenSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (listenSocket == INVALID_SOCKET)
+		return 0;
 
-	TypeList<Mage, Knight>::Head who1; // Mage
-	TypeList<Mage, Knight>::Tail who2; // Knight
+	// Non-Blocking Setting
+	u_long on = 1;
+	if (ioctlsocket(listenSocket, FIONBIO, &on) == INVALID_SOCKET)
+		return 0;
 
-	TypeList<Mage, TypeList<Knight, Archer>>::Tail::Head who3; // Knight
-	TypeList<Mage, TypeList<Knight, Archer>>::Tail::Tail who4; // Archer
+	SOCKADDR_IN serverAddr;
+	memset(&serverAddr, 0, sizeof(serverAddr));
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	serverAddr.sin_port = htons(7777);
 
-	int32 len1 = Length<TypeList<Mage, Knight>>::value; // 2
-	int32 len2 = Length<TypeList<Mage, Knight, Archer>>::value; // 3
+	if (::bind(listenSocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR)
+		return 0;
 
-	TypeAt<TL, 0>::Result who5; // Mage
-	TypeAt<TL, 1>::Result who6; // Knight
-	TypeAt<TL, 2>::Result who7; // Archer
+	if (listen(listenSocket, SOMAXCONN) == SOCKET_ERROR)
+		return 0;
 
-	int32 index1 = IndexOf<TL, Mage>::value; // 0
-	int32 index2 = IndexOf<TL, Knight>::value; // 1
-	int32 index3 = IndexOf<TL, Archer>::value; // 2
-	int32 index4 = IndexOf<TL, Dog>::value; // -1
+	cout << "Accept" << endl;
 
-	bool canConvert1 = Conversion<Player, Knight>::exists;
-	bool canConvert2 = Conversion<Knight, Player>::exists;
-	bool canConvert3 = Conversion<Knight, Dog>::exists;
+	// Select 모델
+	vector<Session> sessions;
+	sessions.reserve(100);
 
-	TypeConversion<TL> test;
-	test.s_convert[0][0];
-	
+	fd_set reads;
+	fd_set writes;
+
+	while (true)
 	{
-		Player* player = new Player();
-		Player* knight = new Knight();
+		// 소켓 셋 초기화
+		FD_ZERO(&reads);
+		FD_ZERO(&writes);
 
-		bool canCast1 = CanCast<Knight*>(player);
-		Knight* pknight = TypeCast<Knight*>(player);
+		// ListenSocket 등록 -> accept는 read
+		FD_SET(listenSocket, &reads);
 
-		bool canCast2 = CanCast<Knight*>(knight);
-		Knight* kknight = TypeCast<Knight*>(knight);
-		
-		delete player;
-		delete knight;
-	}
+		// 소켓 등록
+		for (Session& s : sessions)
+		{
+			if (s.recvBytes <= s.sendBytes)
+				FD_SET(s.socket, &reads);
+			else
+				FD_SET(s.socket, &writes);
+		}
 
-	for (int32 i = 0; i < 5; i++)
-	{
-		GThreadManager->Launch([]() {
-			while (true)
+		// [옵션] 마지막 timeout 인자 설정 가능 -> 대기시간. nullptr => 무한대기
+		int32 retVal = select(0, &reads, &writes, nullptr, nullptr);
+		if (retVal == SOCKET_ERROR)
+			break;
+
+		// Listener 소켓 체크
+		if (FD_ISSET(listenSocket, &reads))
+		{
+			SOCKADDR_IN clientAddr;
+			int32 addrLen = sizeof(clientAddr);
+			SOCKET clientSocket = accept(listenSocket, (SOCKADDR*)&clientAddr, &addrLen);
+			if (clientSocket != INVALID_SOCKET)
 			{
-				Vector<int32> v(100);
-				Map<int32, Knight> m;
-				m[100] = Knight();
-				this_thread::sleep_for(10ms);
+				cout << "Clent Connected!" << endl;
+				sessions.push_back(Session{ clientSocket });
 			}
-			});
+		}
+
+		// 나머지 소켓 체크
+		for (Session& s : sessions)
+		{
+			// Read
+			if (FD_ISSET(s.socket, &reads))
+			{
+				int32 recvLen = recv(s.socket, s.recvBuffer, BUFSIZE, 0);
+				if (recvLen <= 0) {
+					// TODO: session 제거
+					continue;
+				}
+
+				s.recvBytes = recvLen;
+			}
+
+			// Write
+			if (FD_ISSET(s.socket, &writes))
+			{
+				/*
+					블로킹 -> 모든 데이터 다 보냄
+					논블로킹 -> 일부만 보낼 수 있음.(상대방 수신 버퍼 상황에 따라)
+				*/
+				int32 sendLen = send(s.socket, &s.recvBuffer[s.sendBytes], s.recvBytes - s.sendBytes, 0);
+				if (sendLen == SOCKET_ERROR)
+				{
+					// TODO: session 제거
+					continue;
+				}
+
+				s.sendBytes += sendLen;
+				if (s.recvBytes == s.sendBytes)
+				{
+					s.recvBytes = 0;
+					s.sendBytes = 0;
+				}
+			}
+		}
 	}
 
-	GThreadManager->Join();
+	WSACleanup();
 }
