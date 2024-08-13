@@ -18,7 +18,7 @@ wstring NetAddress::GetIpAddress()
 {
 	WCHAR buffer[100];
 	InetNtopW(AF_INET, &_sockAddr.sin_addr, buffer, len32(buffer));
-	return wstring();
+	return wstring(buffer);
 }
 
 IN_ADDR NetAddress::ip2Address(const WCHAR* ip)
