@@ -2,13 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Main">
-      <UniqueIdentifier>{39976564-0030-4357-86d0-18bab196f784}</UniqueIdentifier>
+      <UniqueIdentifier>{7a4f304c-da33-4926-a7de-a2b8efdbe223}</UniqueIdentifier>
     </Filter>
     <Filter Include="Utils">
-      <UniqueIdentifier>{45c9f00b-364a-4ec6-ac2e-51b2d7ce2493}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Test">
-      <UniqueIdentifier>{efd0747e-e51d-4dbf-8b99-ad9f0f34c2e4}</UniqueIdentifier>
+      <UniqueIdentifier>{9b52bc83-d52e-4fa2-8e52-56ba6d0d6ebb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -18,22 +15,10 @@
     <ClCompile Include="pch.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="AccountManager.cpp">
-      <Filter>Test</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerManager.cpp">
-      <Filter>Test</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="AccountManager.h">
-      <Filter>Test</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerManager.h">
-      <Filter>Test</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
