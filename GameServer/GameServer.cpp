@@ -3,8 +3,8 @@
 #include "ThreadManager.h"
 #include "SocketUtils.h"
 #include <iostream>
-#include "Listener.h"
-
+#include "Service.h"
+#include "Session.h"
 int main()
 {
 	/*SOCKET socket = SocketUtils::CreateSocket();
@@ -13,15 +13,21 @@ int main()
 	SOCKET clientSocket = accept(socket, nullptr, nullptr);
 	cout << "Client Connected!" << endl;*/
 
-	Listener listener;
-	listener.StartAccept(NetAddress(L"127.0.0.1", 7777));
+	ServerServiceRef service = MakeShared<ServerService>(
+		NetAddress(L"127.0.0.1", 7777),
+		MakeShared<IocpCore>(),
+		MakeShared<Session>,
+		100
+	);
+
+	ASSERT_CRASH(service->Start());
 
 	for (int32 i = 0; i < 5; i++)
 	{
 		GThreadManager->Launch([=]() {
 			while (true)
 			{
-				GIocpCore.Dispatch();
+				service->GetIocpCore()->Dispatch();
 			}
 			});
 	}
