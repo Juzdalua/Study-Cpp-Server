@@ -13,6 +13,27 @@ Session::~Session()
 	SocketUtils::Close(_socket);
 }
 
+void Session::Send(BYTE* buffer, int32 len)
+{
+	/*
+		센드는 언제 호출될지 미리 예측할 수 없다.
+		1. 버퍼 관리
+		2. sendEvent 관리. 단일/여러개, WSASend 중첩
+		-> 귓속말, 몬스터 처리 등 여러개의 Send가 발생할 수 있다.
+		3. Send가 완벽하게 송신할 때까지 유지되어야한다.
+	*/
+
+	// TEMP
+	SendEvent* sendEvent = xnew<SendEvent>();
+	sendEvent->owner = shared_from_this();
+	sendEvent->buffer.resize(len);
+	memcpy(sendEvent->buffer.data(), buffer, len);
+
+	// WSASend 함수는 안전하지 않기 때문에 순서를 보장해줘야한다. 
+	WRITE_LOCK;
+	RegisterSend(sendEvent);
+}
+
 void Session::Disconnect(const WCHAR* cause)
 {
 	if (_connected.exchange(false) == false)
@@ -20,7 +41,7 @@ void Session::Disconnect(const WCHAR* cause)
 
 	// TEMP
 	wcout << "Disconnect: " << cause << endl;
-	
+
 	OnDisconnected();
 	SocketUtils::Close(_socket);
 	GetService()->ReleaseSession(GetSessionRef());
@@ -44,7 +65,7 @@ void Session::Dispatch(IocpEvent* iocpEvent, int32 numOfBytes)
 		break;
 
 	case EventType::Send:
-		ProcessSend(numOfBytes);
+		ProcessSend(static_cast<SendEvent*>(iocpEvent), numOfBytes);
 		break;
 
 	default:
@@ -80,8 +101,26 @@ void Session::RegisterRecv()
 	}
 }
 
-void Session::RegisterSend()
+void Session::RegisterSend(SendEvent* sendEvent)
 {
+	if (IsConnected() == false)
+		return;
+
+	WSABUF wsaBuf;
+	wsaBuf.buf = (char*)sendEvent->buffer.data();
+	wsaBuf.len = (ULONG)sendEvent->buffer.size();
+
+	DWORD numOfBytes = 0;
+	if (SOCKET_ERROR == WSASend(_socket, &wsaBuf, 1, OUT & numOfBytes, 0, sendEvent, nullptr))
+	{
+		int32 errorCode = WSAGetLastError();
+		if (errorCode != WSA_IO_PENDING)
+		{
+			HandleError(errorCode);
+			sendEvent->owner == nullptr;
+			xdelete(sendEvent);
+		}
+	}
 }
 
 void Session::ProcessConnect()
@@ -115,8 +154,18 @@ void Session::ProcessRecv(int32 numOfBytes)
 	RegisterRecv();
 }
 
-void Session::ProcessSend(int32 numOfBytes)
+void Session::ProcessSend(SendEvent* sendEvent, int32 numOfBytes)
 {
+	sendEvent->owner = nullptr;
+	xdelete(sendEvent);
+
+	if (numOfBytes == 0)
+	{
+		Disconnect(L"Send 0");
+		return;
+	}
+
+	OnSend(numOfBytes);
 }
 
 void Session::HandleError(int32 errorCode)
