@@ -56,7 +56,7 @@ protected:
 
 public:
 	// TEMP
-	char _recvBuffer[1000];
+	BYTE _recvBuffer[1000];
 
 	// Circular Buffer -> 데이터를 버퍼에 순차적으로 복사해서 저장한다.
 	/*char _sendBuffer[1000];

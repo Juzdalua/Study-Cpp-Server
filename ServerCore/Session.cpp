@@ -147,8 +147,7 @@ void Session::ProcessRecv(int32 numOfBytes)
 		return;
 	}
 
-	// TODO
-	cout << "Recv Data Len = " << numOfBytes << endl;
+	OnRecv(_recvBuffer, numOfBytes);
 
 	// 수신 재등록
 	RegisterRecv();
