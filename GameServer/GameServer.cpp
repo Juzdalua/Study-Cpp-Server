@@ -1,13 +1,17 @@
 #include "pch.h"
-#include "CorePch.h"
 #include "ThreadManager.h"
-#include "SocketUtils.h"
 #include <iostream>
 #include "Service.h"
 #include "Session.h"
 
 class GameSession : public Session
 {
+public:
+	virtual ~GameSession()
+	{
+		cout << "~GameSession" << endl;
+	}
+
 public:
 	virtual int32 OnRecv(BYTE* buffer, int32 len) override
 	{
