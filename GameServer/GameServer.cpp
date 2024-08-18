@@ -4,6 +4,7 @@
 #include "Service.h"
 #include "Session.h"
 #include "GameSession.h"
+#include "GameSessionManager.h"
 
 int main()
 {
@@ -30,6 +31,24 @@ int main()
 				service->GetIocpCore()->Dispatch();
 			}
 			});
+	}
+
+	char sendData[] = "Hello World!";
+	while (true)
+	{
+		SendBufferRef sendBuffer = GSendBufferManager->Open(4096);
+
+		BYTE* buffer = sendBuffer->Buffer();
+		((PacketHeader*)buffer)->size = (sizeof(sendData) + sizeof(PacketHeader));
+		((PacketHeader*)buffer)->id = 1;
+		reinterpret_cast<PacketHeader*>(buffer)->id = 2;
+
+		memcpy(&buffer[4], sendData, sizeof(sendData));
+		sendBuffer->Close((sizeof(sendData) + sizeof(PacketHeader)));
+
+		GSessionManager.Broadcast(sendBuffer);
+
+		this_thread::sleep_for(250ms);
 	}
 
 	GThreadManager->Join();

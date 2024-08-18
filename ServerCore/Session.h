@@ -6,6 +6,9 @@
 
 class Service;
 
+/*-----------------
+	Session
+-----------------*/
 class Session:public IocpObject
 {
 	friend class Listener;
@@ -86,3 +89,24 @@ private:
 	SendEvent _sendEvent;
 };
 
+/*-----------------
+	Packet Session
+-----------------*/
+struct PacketHeader
+{
+	uint16 size; // 패킷 size
+	uint16 id; // 프로토콜 ID (ex 1=로그인, 2=이동요청)
+};
+
+class PacketSession : public Session
+{
+public:
+	PacketSession();
+	virtual ~PacketSession();
+
+	PacketSessionRef GetPacketSessionRef() { return static_pointer_cast<PacketSession>(shared_from_this()); }
+
+protected:
+	virtual int32 OnRecv(BYTE* buffer, int32 len) sealed;
+	virtual int32 OnRecvPacket(BYTE* buffer, int32 len) abstract;
+};

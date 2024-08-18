@@ -6,7 +6,7 @@
 
 char sendData[] = "Hello World";
 
-class ServerSession : public Session
+class ServerSession : public PacketSession
 {
 public:
 	virtual ~ServerSession()
@@ -19,15 +19,18 @@ public:
 	{
 		cout << "Connected to Server" << endl;
 
-		SendBufferRef sendBuffer = GSendBufferManager->Open(4096);
-		memcpy(sendBuffer->Buffer(), sendData, sizeof(sendData));
-		sendBuffer->Close(sizeof(sendData));
-
-		Send(sendBuffer);
 	}
 
-	virtual int32 OnRecv(BYTE* buffer, int32 len) override
+	virtual int32 OnRecvPacket(BYTE* buffer, int32 len) override
 	{
+		//PacketHeader header = *((PacketHeader*)buffer);
+		PacketHeader header = *reinterpret_cast<PacketHeader*>(buffer);
+		//cout << "Packet ID: " << header.id << ", Size: " << header.size << endl;
+
+		char recvBuffer[4096];
+		memcpy(recvBuffer, &buffer[4], header.size - sizeof(PacketHeader));
+		cout << recvBuffer << endl;
+
 		cout << "OnRecv Len = " << len << endl;
 		this_thread::sleep_for(1s);
 		
@@ -42,12 +45,12 @@ public:
 
 	virtual void OnSend(int32 len) override
 	{
-		cout << "OnSend Len = " << len << endl;
+		//cout << "OnSend Len = " << len << endl;
 	}
 
 	virtual void OnDisconnected() override
 	{
-		cout << "Disconnected" << endl;
+		//cout << "Disconnected" << endl;
 	}
 };
 
