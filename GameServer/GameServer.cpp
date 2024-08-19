@@ -8,8 +8,20 @@
 #include "BufferWriter.h"
 #include "ServerPacketHandler.h"
 
+class Player
+{
+public:
+	int32 hp = 0;
+	int32 attack = 0;
+	Player* target = nullptr;
+	vector<int32> buffs;
+};
+
 int main()
 {
+
+	Player* player = new Player();
+	delete player;
 	/*SOCKET socket = SocketUtils::CreateSocket();
 	SocketUtils::BindAnyAddress(socket, 7777);
 	SocketUtils::Listen(socket);
