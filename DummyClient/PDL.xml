@@ -6,7 +6,10 @@
 		<Field name="attack" type="uint16" desc=""/>
 		<List name="buffs" desc="">
 			<Field name="buffId" type="uint64" desc=""/>
-			<Field name="remainTime" type="float" desc=""/>	
+			<Field name="remainTime" type="float" desc=""/>
+			<List name="victims">
+				<Field name="userId" type="uint64"/>
+			</List>
 		</List>
 	</Packet>
 </PDL>
