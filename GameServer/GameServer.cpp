@@ -9,24 +9,9 @@
 #include "ServerPacketHandler.h"
 #include "Protocol.pb.h"
 
-class Player
-{
-public:
-	int32 hp = 0;
-	int32 attack = 0;
-	Player* target = nullptr;
-	vector<int32> buffs;
-};
-
 int main()
 {
-	Player* player = new Player();
-	delete player;
-	/*SOCKET socket = SocketUtils::CreateSocket();
-	SocketUtils::BindAnyAddress(socket, 7777);
-	SocketUtils::Listen(socket);
-	SOCKET clientSocket = accept(socket, nullptr, nullptr);
-	cout << "Client Connected!" << endl;*/
+	ServerPacketHandler::Init();
 
 	ServerServiceRef service = MakeShared<ServerService>(
 		NetAddress(L"127.0.0.1", 7777),

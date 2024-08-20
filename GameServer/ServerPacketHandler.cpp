@@ -1,25 +1,18 @@
 #include "pch.h"
 #include "ServerPacketHandler.h"
 
-void ServerPacketHandler::HandlePacket(BYTE* buffer, int32 len)
+PacketHandlerFunc GPacketHandler[UINT16_MAX];
+
+bool Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)
 {
-	BufferReader br(buffer, len);
-	PacketHeader header;
+	PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
+	// TODO: Log
 
-	br.Peek(&header);
-
-	switch (header.id)
-	{
-	case S_TEST:
-		break;
-
-	default:
-		break;
-	}
+	return false;
 }
 
-SendBufferRef ServerPacketHandler::MakeSendBuffer(Protocol::S_TEST& pkt)
+bool Handle_S_TEST(PacketSessionRef& session, Protocol::S_TEST& pkt)
 {
-	return _MakeSendBuffer(pkt, S_TEST);
+	// TODO
+	return true;
 }
-
