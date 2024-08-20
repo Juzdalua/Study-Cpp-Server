@@ -7,6 +7,7 @@
 #include "GameSessionManager.h"
 #include "BufferWriter.h"
 #include "ServerPacketHandler.h"
+#include "Protocol.pb.h"
 
 class Player
 {
@@ -19,7 +20,6 @@ public:
 
 int main()
 {
-
 	Player* player = new Player();
 	delete player;
 	/*SOCKET socket = SocketUtils::CreateSocket();
@@ -47,35 +47,32 @@ int main()
 			});
 	}
 
-	char sendData[] = "Hello World!";
+	WCHAR sendData[1000] = L"안녕하세요";
+
 	while (true)
 	{
-		// [PKT_S_TEST][BuffListItem BuffListItem BuffListItem][victim victim victim][victim victim][victim]
-		PKT_S_TEST_WRITE pktWriter(1001, 100, 10);
-		PKT_S_TEST_WRITE::BuffList buffList = pktWriter.ReserveBuffList(3);
-		buffList[0] = { 100, 1.5f };
-		buffList[1] = { 200, 2.3f };
-		buffList[2] = { 300, 0.7f };
-
-		PKT_S_TEST_WRITE::BuffVictimList vic0 = pktWriter.ReserveBuffVictimList(&buffList[0], 3);
+		// Protocol.proto의 package Protocao -> Protocol:: 사용
+		Protocol::S_TEST pkt;
+		pkt.set_id(1000);
+		pkt.set_hp(100);
+		pkt.set_attack(10);
+		
 		{
-			vic0[0] = 1000;
-			vic0[1] = 2000;
-			vic0[2] = 3000;
+			// 구조체 형태의 repeated BuffData는 포인터를 반환한다.
+			Protocol::BuffData* data = pkt.add_buffs();
+			data->set_buffid(100);
+			data->set_remaintime(1.2f);
+			data->add_victims(4000); // 기본 변수 repeated는 반환 타입이 없다.
+		}
+		{
+			Protocol::BuffData* data = pkt.add_buffs();
+			data->set_buffid(200);
+			data->set_remaintime(2.5f);
+			data->add_victims(1000);
+			data->add_victims(2000);
 		}
 
-		PKT_S_TEST_WRITE::BuffVictimList vic1 = pktWriter.ReserveBuffVictimList(&buffList[1], 1);
-		{
-			vic1[0] = 1000;
-		}
-
-		PKT_S_TEST_WRITE::BuffVictimList vic2 = pktWriter.ReserveBuffVictimList(&buffList[2], 2);
-		{
-			vic2[0] = 3000;
-			vic2[1] = 5000;
-		}
-
-		SendBufferRef sendBuffer = pktWriter.CloseAndReturn();
+		SendBufferRef sendBuffer = ServerPacketHandler::MakeSendBuffer(pkt);
 
 		GSessionManager.Broadcast(sendBuffer);
 
