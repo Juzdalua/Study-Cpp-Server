@@ -18,8 +18,8 @@ public:
 public:
 	virtual void OnConnected() override
 	{
-		Protocol::C_MOVE movePacket;
-		auto sendBuffer = ServerPacketHandler::MakeSendBuffer(movePacket);
+		/*Protocol::C_MOVE movePacket;
+		auto sendBuffer = ServerPacketHandler::MakeSendBuffer(movePacket);*/
 		cout << "Connected to Server" << endl;
 
 	}
